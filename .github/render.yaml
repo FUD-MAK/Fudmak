@@ -1,0 +1,168 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { ShoppingBag, Plus, Trash2 } from "lucide-react";
+
+const productCatalog = {
+  Staples: [
+    { name: "Rice (Parboiled, 5kg)", price: 5000, image: "https://example.com/rice.jpg" },
+    { name: "Yam (Tuber)", price: 1000, image: "https://example.com/yam.jpg" },
+    { name: "Garri (Yellow, 2kg)", price: 1400, image: "https://example.com/garri.jpg" },
+    { name: "Semovita (2kg)", price: 1800, image: "https://example.com/semovita.jpg" },
+    { name: "Fufu (Cassava, 1kg)", price: 1000, image: "https://example.com/fufu.jpg" },
+  ],
+  Proteins: [
+    { name: "Chicken (Frozen, 1kg)", price: 2500, image: "https://example.com/chicken.jpg" },
+    { name: "Beef (1kg)", price: 2200, image: "https://example.com/beef.jpg" },
+    { name: "Fish (Titus, 1 pack)", price: 1500, image: "https://example.com/fish.jpg" },
+    { name: "Crayfish (small pack)", price: 800, image: "https://example.com/crayfish.jpg" },
+  ],
+  Oils: [
+    { name: "Palm Oil (1L)", price: 1500, image: "https://example.com/palmoil.jpg" },
+    { name: "Vegetable Oil (1L)", price: 1300, image: "https://example.com/veg-oil.jpg" },
+    { name: "Coconut Oil (1L)", price: 2000, image: "https://example.com/coconutoil.jpg" },
+  ],
+  Seasonings: [
+    { name: "Maggi Cubes (1 pack)", price: 500, image: "https://example.com/maggi.jpg" },
+    { name: "Curry Powder (small)", price: 300, image: "https://example.com/curry.jpg" },
+    { name: "Salt (1kg)", price: 200, image: "https://example.com/salt.jpg" },
+  ],
+  Vegetables: [
+    { name: "Ugu (1 bunch)", price: 300, image: "https://example.com/ugu.jpg" },
+    { name: "Okra (500g)", price: 400, image: "https://example.com/okra.jpg" },
+    { name: "Carrot (500g)", price: 600, image: "https://example.com/carrot.jpg" },
+  ],
+};
+
+export default function FoodShoppingApp() {
+  const [items, setItems] = useState({ weekly: [], monthly: [], quarterly: [], preset: [], catalog: [] });
+  const [currentTab, setCurrentTab] = useState("weekly");
+  const [showSummary, setShowSummary] = useState(false);
+
+  const addToCart = (item) => {
+    setItems((prev) => ({
+      ...prev,
+      catalog: [...prev.catalog, item],
+    }));
+  };
+
+  const removeItem = (type, index) => {
+    setItems(prev => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index),
+    }));
+  };
+
+  const calculateTotal = (list) => {
+    return list.reduce((total, item) => total + item.price, 0).toFixed(2);
+  };
+
+  const allItems = [
+    ...items.weekly,
+    ...items.monthly,
+    ...items.quarterly,
+    ...items.preset,
+    ...items.catalog
+  ];
+
+  return (
+    <div className="max-w-5xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+        <ShoppingBag className="text-green-500" /> Market Food Planner
+      </h1>
+
+      <Tabs value={currentTab} onValueChange={setCurrentTab}>
+        <TabsList className="mb-4 flex flex-wrap gap-2">
+          <TabsTrigger value="weekly">Weekly</TabsTrigger>
+          <TabsTrigger value="monthly">Monthly</TabsTrigger>
+          <TabsTrigger value="quarterly">Quarterly</TabsTrigger>
+          <TabsTrigger value="preset">Food Packages</TabsTrigger>
+          <TabsTrigger value="catalog">Product Catalog</TabsTrigger>
+        </TabsList>
+
+        {Object.keys(items).map(type => (
+          <TabsContent key={type} value={type}>
+            <div className="grid gap-2">
+              {items[type].length === 0 ? (
+                <p className="text-gray-500">No items added for {type} list.</p>
+              ) : (
+                <>
+                  {items[type].map((item, idx) => (
+                    <Card key={idx} className="flex justify-between items-center p-2">
+                      <CardContent className="p-0 text-sm font-medium">
+                        {item.name} - ₦{item.price.toFixed(2)}
+                      </CardContent>
+                      <Button variant="ghost" size="icon" onClick={() => removeItem(type, idx)}>
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </Card>
+                  ))}
+                  <p className="text-right font-bold mt-2">Total: ₦{calculateTotal(items[type])}</p>
+                </>
+              )}
+            </div>
+          </TabsContent>
+        ))}
+
+        <TabsContent value="catalog">
+          {Object.keys(productCatalog).map((category) => (
+            <div key={category} className="mb-6">
+              <h2 className="text-lg font-bold mb-2">{category}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {productCatalog[category].map((item, idx) => (
+                  <Card key={idx} className="p-2">
+                    <img src={item.image} alt={item.name} className="w-full h-32 object-cover rounded" />
+                    <CardContent className="mt-2 p-0 text-sm">
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="text-gray-600">₦{item.price.toFixed(2)}</p>
+                      <Button className="mt-2" onClick={() => addToCart(item)}>Add to List</Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ))}
+        </TabsContent>
+      </Tabs>
+
+      <div className="text-right mt-6">
+        <Button className="bg-green-600 hover:bg-green-700" onClick={() => setShowSummary(true)}>
+          Proceed to Checkout
+        </Button>
+      </div>
+
+      {showSummary && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <h2 className="text-xl font-bold mb-4">Checkout Summary</h2>
+            {allItems.length === 0 ? (
+              <p>No items selected.</p>
+            ) : (
+              <div className="grid gap-2">
+                {allItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center border-b py-2">
+                    <span>{item.name}</span>
+                    <span className="font-medium">₦{item.price.toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between mt-4 font-bold">
+                  <span>Total:</span>
+                  <span>₦{calculateTotal(allItems)}</span>
+                </div>
+                <div className="text-right mt-4">
+                  <Button className="bg-blue-600 hover:bg-blue-700">Confirm Purchase</Button>
+                </div>
+              </div>
+            )}
+            <div className="text-center mt-4">
+              <Button variant="ghost" onClick={() => setShowSummary(false)}>Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
