@@ -1,0 +1,8 @@
+git init
+git remote add origin https://github.com/FUD-MAK/fudmak-fullstack.git
+git add .
+git commit -m "Initial commit"
+git push -u origin main{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {}
+}
